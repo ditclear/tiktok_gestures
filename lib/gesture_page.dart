@@ -11,8 +11,9 @@ class GesturePage extends StatefulWidget {
   }
 }
 
-class _GestureState extends State<GesturePage> with SingleTickerProviderStateMixin {
-  TabController tabController;
+class _GestureState extends State<GesturePage> with TickerProviderStateMixin {
+  AnimationController animationController;
+  Animation<double> animation;
 
   var dx = 0.0;
   var dy = 0.0;
@@ -23,7 +24,13 @@ class _GestureState extends State<GesturePage> with SingleTickerProviderStateMix
     // TODO: implement initState
     super.initState();
 
-    tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    animationController.dispose();
+    super.dispose();
   }
 
   @override
@@ -31,9 +38,22 @@ class _GestureState extends State<GesturePage> with SingleTickerProviderStateMix
     SystemChrome.setEnabledSystemUIOverlays([]);
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
+
     return Material(
       child: Scaffold(
         body: GestureDetector(
+          onPanEnd: (details) {
+            if(dx.abs()<screenWidth/2) {
+              animateToMiddle();
+            }else if(dx>0){
+              animateToLeft(screenWidth);
+            }else{
+              animateToRight(screenWidth);
+            }
+          },
+          onPanStart: (_){
+            animationController?.stop();
+          },
           onPanUpdate: (details) {
             if (dx + details.delta.dx >= screenWidth) {
               setState(() {
@@ -55,13 +75,16 @@ class _GestureState extends State<GesturePage> with SingleTickerProviderStateMix
               children: <Widget>[
                 Positioned.fill(
                   child: Transform.scale(
-                    scale: 0.88 + 0.12 * dx / screenWidth < 0.88? 0.88: 0.88 + 0.12 * dx / screenWidth,
+                    scale: 0.88 + 0.12 * dx / screenWidth < 0.88 ? 0.88 : 0.88 + 0.12 * dx / screenWidth,
                     child: Container(
-                      child: Image.asset("assets/left.png",fit: BoxFit.fill,),
+                      child: Image.asset(
+                        "assets/left.png",
+                        fit: BoxFit.fill,
+                      ),
                       foregroundDecoration: BoxDecoration(
-                          color: Color.fromRGBO(
-                              0, 0, 0,1-(dx/screenWidth)),
-                          borderRadius: BorderRadius.circular(20.0), //3像素圆角
+                          color: Color.fromRGBO(0, 0, 0, 1 - (dx / screenWidth)),
+                          borderRadius: BorderRadius.circular(20.0),
+                          //3像素圆角
                           boxShadow: [
                             //阴影
                             BoxShadow(color: Colors.black54, offset: Offset(2.0, 2.0), blurRadius: 4.0)
@@ -70,11 +93,14 @@ class _GestureState extends State<GesturePage> with SingleTickerProviderStateMix
                   ),
                 ),
                 Transform.translate(
-                  offset: Offset(dx>0?dx:dx/5, 0),
+                  offset: Offset(dx > 0 ? dx : dx / 5, 0),
                   child: Container(
                     height: screenHeight,
                     color: Colors.transparent,
-                    child: Image.asset("assets/middle.png",fit: BoxFit.fitHeight,),
+                    child: Image.asset(
+                      "assets/middle.png",
+                      fit: BoxFit.fitHeight,
+                    ),
                   ),
                 ),
                 Transform.translate(
@@ -82,7 +108,10 @@ class _GestureState extends State<GesturePage> with SingleTickerProviderStateMix
                     child: Container(
                       height: screenHeight,
                       color: Colors.transparent,
-                      child: Image.asset("assets/right.png",fit: BoxFit.fitHeight,),
+                      child: Image.asset(
+                        "assets/right.png",
+                        fit: BoxFit.fitHeight,
+                      ),
                     ))
               ],
             ),
@@ -90,5 +119,41 @@ class _GestureState extends State<GesturePage> with SingleTickerProviderStateMix
         ),
       ),
     );
+  }
+
+  void animateToMiddle() {
+    animationController = AnimationController(duration:Duration(milliseconds: dx.abs()*1000~/500),vsync: this);
+    final curve = CurvedAnimation(parent: animationController, curve: Curves.easeOutCubic);
+    animation = Tween(begin: dx, end: 0.0).animate(curve)
+      ..addListener(() {
+        setState(() {
+          dx = animation.value;
+        });
+      });
+    animationController.forward();
+  }
+
+  void animateToLeft(double screenWidth) {
+    animationController = AnimationController(duration:Duration(milliseconds: dx.abs()*1000~/500),vsync: this);
+    final curve = CurvedAnimation(parent: animationController, curve: Curves.easeOutCubic);
+    animation = Tween(begin: dx, end: screenWidth).animate(curve)
+      ..addListener(() {
+        setState(() {
+          dx = animation.value;
+        });
+      });
+    animationController.forward();
+  }
+
+  void animateToRight(double screenWidth) {
+    animationController = AnimationController(duration:Duration(milliseconds: dx.abs()*1000~/500),vsync: this);
+    final curve = CurvedAnimation(parent: animationController, curve: Curves.easeOutCubic);
+    animation = Tween(begin: dx, end: -screenWidth).animate(curve)
+      ..addListener(() {
+        setState(() {
+          dx = animation.value;
+        });
+      });
+    animationController.forward();
   }
 }
