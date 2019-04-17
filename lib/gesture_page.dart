@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:tiktok_gestures/detail_page.dart';
+import 'package:flutter/cupertino.dart';
 
 class GesturePage extends StatefulWidget {
   @override
@@ -14,6 +16,7 @@ class GesturePage extends StatefulWidget {
 class _GestureState extends State<GesturePage> with TickerProviderStateMixin {
   AnimationController animationController;
   Animation<double> animation;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   var dx = 0.0;
   var dy = 0.0;
@@ -23,7 +26,6 @@ class _GestureState extends State<GesturePage> with TickerProviderStateMixin {
   void initState() {
     // TODO: implement initState
     super.initState();
-
   }
 
   @override
@@ -33,6 +35,9 @@ class _GestureState extends State<GesturePage> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  /// 评论框是否显示
+  bool isBottomSheetShowing = false;
+
   @override
   Widget build(BuildContext context) {
     SystemChrome.setEnabledSystemUIOverlays([]);
@@ -41,17 +46,18 @@ class _GestureState extends State<GesturePage> with TickerProviderStateMixin {
 
     return Material(
       child: Scaffold(
+        key: _scaffoldKey,
         body: GestureDetector(
           onPanEnd: (details) {
-            if(dx.abs()<screenWidth/2) {
+            if (dx.abs() < screenWidth / 2) {
               animateToMiddle();
-            }else if(dx>0){
+            } else if (dx > 0) {
               animateToLeft(screenWidth);
-            }else{
+            } else {
               animateToRight(screenWidth);
             }
           },
-          onPanStart: (_){
+          onPanStart: (_) {
             animationController?.stop();
           },
           onPanUpdate: (details) {
@@ -94,13 +100,17 @@ class _GestureState extends State<GesturePage> with TickerProviderStateMixin {
                 ),
                 Transform.translate(
                   offset: Offset(dx > 0 ? dx : dx / 5, 0),
-                  child: Container(
-                    height: screenHeight,
-                    color: Colors.transparent,
-                    child: Image.asset(
-                      "assets/middle.png",
-                      fit: BoxFit.fitHeight,
-                    ),
+                  child: PageView(
+                    children: List(10)
+                        .map((_) => Container(
+                              color: Colors.yellow,
+                              child: Image.asset(
+                                "assets/middle.png",
+                                fit: BoxFit.fitHeight,
+                              ),
+                            ))
+                        .toList(),
+                    scrollDirection: Axis.vertical,
                   ),
                 ),
                 Transform.translate(
@@ -108,9 +118,37 @@ class _GestureState extends State<GesturePage> with TickerProviderStateMixin {
                     child: Container(
                       height: screenHeight,
                       color: Colors.transparent,
-                      child: Image.asset(
-                        "assets/right.png",
-                        fit: BoxFit.fitHeight,
+                      child: Stack(
+                        children: <Widget>[
+                          Image.asset(
+                            "assets/right.png",
+                            fit: BoxFit.fitHeight,
+                          ),
+                          Positioned(
+                              bottom: 190,
+                              child: FlatButton(
+                                padding: EdgeInsets.all(0),
+                                onPressed: () {
+                                  Navigator.push(context, PageRouteBuilder(
+                                      pageBuilder: (BuildContext context, Animation animation,
+                                          Animation secondaryAnimation) {
+                                        return DetailPage();
+                                      })
+                                  );
+                                },
+                                child: SizedBox(
+                                  width: 130,
+                                  height: 170,
+                                  child: Hero(
+                                    tag: "detail",
+                                    child: Image.asset(
+                                      "assets/detail.png",
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
+                              ))
+                        ],
                       ),
                     ))
               ],
@@ -121,8 +159,9 @@ class _GestureState extends State<GesturePage> with TickerProviderStateMixin {
     );
   }
 
+  /// 滑动到中间
   void animateToMiddle() {
-    animationController = AnimationController(duration:Duration(milliseconds: dx.abs()*1000~/500),vsync: this);
+    animationController = AnimationController(duration: Duration(milliseconds: dx.abs() * 1000 ~/ 500), vsync: this);
     final curve = CurvedAnimation(parent: animationController, curve: Curves.easeOutCubic);
     animation = Tween(begin: dx, end: 0.0).animate(curve)
       ..addListener(() {
@@ -133,8 +172,9 @@ class _GestureState extends State<GesturePage> with TickerProviderStateMixin {
     animationController.forward();
   }
 
+  /// 滑动到左边
   void animateToLeft(double screenWidth) {
-    animationController = AnimationController(duration:Duration(milliseconds: dx.abs()*1000~/500),vsync: this);
+    animationController = AnimationController(duration: Duration(milliseconds: dx.abs() * 1000 ~/ 500), vsync: this);
     final curve = CurvedAnimation(parent: animationController, curve: Curves.easeOutCubic);
     animation = Tween(begin: dx, end: screenWidth).animate(curve)
       ..addListener(() {
@@ -145,8 +185,9 @@ class _GestureState extends State<GesturePage> with TickerProviderStateMixin {
     animationController.forward();
   }
 
+  /// 滑动到右边
   void animateToRight(double screenWidth) {
-    animationController = AnimationController(duration:Duration(milliseconds: dx.abs()*1000~/500),vsync: this);
+    animationController = AnimationController(duration: Duration(milliseconds: dx.abs() * 1000 ~/ 500), vsync: this);
     final curve = CurvedAnimation(parent: animationController, curve: Curves.easeOutCubic);
     animation = Tween(begin: dx, end: -screenWidth).animate(curve)
       ..addListener(() {
