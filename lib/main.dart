@@ -1,8 +1,6 @@
 
 import 'package:flutter/material.dart';
-import 'package:tiktok_gestures/gesture_page.dart';
-import 'package:flutter/scheduler.dart' show timeDilation;
-import 'dart:math' as math;
+import 'package:tiktok_gestures/tiktok_page.dart';
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
@@ -22,9 +20,8 @@ class MyApp extends StatelessWidget {
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
         primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: Colors.red
       ),
-      home: GesturePage(),
+      home: TikTokPage(),
     );
   }
 }
