@@ -9,7 +9,6 @@ class DetailPage extends StatefulWidget {
 }
 
 class _DetailState extends State<DetailPage> with TickerProviderStateMixin {
-
   double dy = 0.0;
   AnimationController animationController;
   Animation<double> animation;
@@ -27,14 +26,14 @@ class _DetailState extends State<DetailPage> with TickerProviderStateMixin {
           // 否则返回到上个页面
           if (isCommentShow) {
             animateToBottom(screenHeight);
-          }else{
+          } else {
             Navigator.pop(context);
           }
         },
-        onVerticalDragStart: (_){
+        onVerticalDragStart: (_) {
           animationController?.stop();
         },
-        onVerticalDragEnd: (_){
+        onVerticalDragEnd: (_) {
           // 滑动截止时，根据 dy 判断是展开还是回缩
           if (dy < 0) {
             if (!isCommentShow && dy.abs() > screenHeight * 0.2) {
@@ -50,9 +49,11 @@ class _DetailState extends State<DetailPage> with TickerProviderStateMixin {
                 animateToBottom(screenHeight);
               }
             }
+          }else{
+            dy = 0;
           }
         },
-        onVerticalDragUpdate: (details){
+        onVerticalDragUpdate: (details) {
           // dy 不超过 -screenHeight * 0.6
           dy += details.delta.dy;
           if ((dy < 0 && dy.abs() > screenHeight * 0.6)) {
@@ -70,15 +71,16 @@ class _DetailState extends State<DetailPage> with TickerProviderStateMixin {
               height: screenHeight,
             ),
             Transform.translate(
-              offset: Offset(0, dy + screenHeight),
+              offset: Offset(0, dy > 0 ? screenHeight : dy + screenHeight),
               child: Container(
                   height: screenHeight * 0.6,
                   child: GestureDetector(
                     onTap: () {},
                     child: Image.asset(
-                        "assets/comment.png",),
-                  )
-              ),
+                      "assets/comment.png",
+                      fit: BoxFit.fitHeight,
+                    ),
+                  )),
             ),
           ],
         ),
@@ -126,11 +128,9 @@ class _DetailState extends State<DetailPage> with TickerProviderStateMixin {
     animationController.forward(from: dy);
   }
 
-
   @override
   void dispose() {
     animationController?.dispose();
     super.dispose();
   }
-
 }
