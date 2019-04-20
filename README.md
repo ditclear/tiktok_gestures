@@ -17,6 +17,9 @@ Flutter 是 Google推出并开源的移动应用开发框架，主打跨平台�
 > Github地址：<https://github.com/ditclear/tiktok_gestures>
 
 **demo下载**:
+
+
+
 ![](https://upload-images.jianshu.io/upload_images/3722695-6362484115f838c7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 
