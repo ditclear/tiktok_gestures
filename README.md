@@ -6,7 +6,7 @@ Flutter 是 Google推出并开源的移动应用开发框架，主打跨平台�
 
 抖音，英文名TikTok，一款火遍全球的短视频App。在玩抖音的日子里，最令我感到舒服的就是抖音的手势交互，加上近期都在进行Flutter方面的学习，因此就产生了使用Flutter来仿写TikTok手势交互的想法。
 
-来看看实现的效果：
+来看看**实现的效果**：
 
 ![](https://media.giphy.com/media/Y0nMQwaOg14vWmwQDz/giphy.gif)
 
@@ -15,6 +15,11 @@ Flutter 是 Google推出并开源的移动应用开发框架，主打跨平台�
 > Gif：<https://giphy.com/gifs/Y0nMQwaOg14vWmwQDz>
 >
 > Github地址：<https://github.com/ditclear/tiktok_gestures>
+
+**demo下载**:
+![](https://upload-images.jianshu.io/upload_images/3722695-6362484115f838c7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+
 
 ### GestureDetector以及Transform
 
