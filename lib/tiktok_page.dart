@@ -4,6 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tiktok_gestures/detail_page.dart';
+import 'package:tiktok_gestures/helper/transparent_page.dart';
+import 'package:tiktok_gestures/middle_page.dart';
 import 'package:vibrate/vibrate.dart';
 
 /// 首页
@@ -133,110 +135,8 @@ class _TikTokState extends State<TikTokPage> with TickerProviderStateMixin {
   ///
   /// 通过 [Transform.translate] 根据 [offsetX] 进行偏移
   /// 水平偏移量为 [ offsetX] /5 产生视差效果
-  Transform buildMiddlePage() {
-    return Transform.translate(
-      offset: Offset(offsetX > 0 ? offsetX : offsetX / 5, 0),
-      child: Stack(
-        children: <Widget>[
-          Container(
-            child: Column(
-              verticalDirection: VerticalDirection.down,
-              children: <Widget>[
-                Expanded(
-                  child: Image.asset(
-                    "assets/middle.png",
-                    fit: BoxFit.fill,
-                  ),
-                ),
-                Image.asset(
-                  "assets/bottom.png",
-                  fit: BoxFit.fill,
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 24),
-            child: buildHeader(),
-          )
-        ],
-      ),
-    );
-  }
+  Widget buildMiddlePage()=>MiddlePage(offsetX: offsetX,offsetY: offsetY);
 
-  Widget buildHeader() {
-    if (offsetY >= 20) {
-      return Opacity(
-        opacity: (offsetY - 20) / 20,
-        child: Transform.translate(
-          offset: Offset(0, offsetY),
-          child: Container(
-            height: 44,
-            child: Center(
-              child: const Text(
-                "下拉刷新内容",
-                style: TextStyle(color: Colors.white, fontSize: 18),
-              ),
-            ),
-          ),
-        ),
-      );
-    } else {
-      return Opacity(
-        opacity: max(0, 1 - offsetY / 20),
-        child: Transform.translate(
-          offset: Offset(0, offsetY),
-          child: DefaultTextStyle(
-            style: TextStyle(fontSize: 18, color: Colors.grey),
-            child: Container(
-              height: 44,
-              child: Row(
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 0, 5, 0),
-                    child: Icon(
-                      Icons.camera_alt,
-                      size: 24,
-                    ),
-                  ),
-                  const Text('随拍'),
-                  Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Text(
-                          "推荐",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 10),
-                          width: 1,
-                          height: 12,
-                          color: Colors.white24,
-                        ),
-                        Text("上海"),
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    Icons.live_tv,
-                    size: 24,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(5, 0, 24, 0),
-                    child: Icon(
-                      Icons.search,
-                      size: 24,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-  }
 
   /// 右侧Widget
   ///
@@ -260,7 +160,7 @@ class _TikTokState extends State<TikTokPage> with TickerProviderStateMixin {
                   child: FlatButton(
                     padding: EdgeInsets.all(0),
                     onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) {
+                      Navigator.push(context, TransparentPage(builder:(BuildContext context) {
                         return DetailPage();
                       }));
                     },
@@ -340,12 +240,10 @@ class _TikTokState extends State<TikTokPage> with TickerProviderStateMixin {
     animationControllerY.forward();
   }
 
-  vibrate() async {
-    // Check if the device can vibrate
-    bool canVibrate = await Vibrate.canVibrate;
-    if (canVibrate) {
-      Vibrate.feedback(FeedbackType.medium);
-    }
+  /// 震动效果
+  vibrate() {
+    // not Check if the device can vibrate
+    Vibrate.feedback(FeedbackType.impact);
   }
 
   @override
