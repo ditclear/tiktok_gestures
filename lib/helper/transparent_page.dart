@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 /// 使Page的背景透明
 ///
 /// 由于[MaterialPageRoute]等等的背景都是不透明的，
-/// 因此copy了[MaterialPageRoute]的代码将背景改为了透明
+/// 因此copy了[MaterialPageRoute]的代码将背景改为了透明，opaque = false
 class TransparentPage<T> extends PageRoute<T> {
   /// Construct a MaterialPageRoute whose contents are defined by [builder].
   ///

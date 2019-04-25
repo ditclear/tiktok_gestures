@@ -3,14 +3,17 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:tiktok_gestures/detail_page.dart';
+import 'package:tiktok_gestures/page/detail_page.dart';
 import 'package:tiktok_gestures/helper/transparent_page.dart';
-import 'package:tiktok_gestures/middle_page.dart';
+import 'package:tiktok_gestures/page/left_page.dart';
+import 'package:tiktok_gestures/page/middle_page.dart';
+import 'package:tiktok_gestures/page/right_page.dart';
 import 'package:vibrate/vibrate.dart';
 
 /// 首页
 ///
 /// 展示类似TikTok的手势交互效果
+/// 包含 拍摄页[LeftPage]、主页[MiddlePage]、用户页[RightPage]
 class TikTokPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -39,6 +42,7 @@ class _TikTokState extends State<TikTokPage> with TickerProviderStateMixin {
     return Material(
       child: Scaffold(
         body: GestureDetector(
+          // 垂直方向滑动中
           onVerticalDragUpdate: inMiddle
               ? (details) {
                   final tempY = offsetY + details.delta.dy / 2;
@@ -62,11 +66,13 @@ class _TikTokState extends State<TikTokPage> with TickerProviderStateMixin {
                   }
                 }
               : null,
+          // 垂直方向滑动结束
           onVerticalDragEnd: (_) {
             if (offsetY != 0) {
               animateToTop();
             }
           },
+          // 水平方向滑动结束
           onHorizontalDragEnd: (details) {
             // 当滑动停止的时候 根据 offsetX 的偏移量进行动画
             // 为了方便这里取 screenWidth / 2为临界条件
@@ -78,9 +84,11 @@ class _TikTokState extends State<TikTokPage> with TickerProviderStateMixin {
               animateToRight(screenWidth);
             }
           },
+          // 水平方向滑动开始
           onHorizontalDragStart: (_) {
             animationControllerX?.stop();
           },
+          // 水平方向滑动中
           onHorizontalDragUpdate: (details) {
             // 控制 offsetX 的值在 -screenWidth 到 screenWidth 之间
             if (offsetX + details.delta.dx >= screenWidth) {
@@ -97,15 +105,12 @@ class _TikTokState extends State<TikTokPage> with TickerProviderStateMixin {
               });
             }
           },
-          child: Container(
-            color: Colors.black,
-            child: Stack(
-              children: <Widget>[
-                buildLeftPage(screenWidth),
-                buildMiddlePage(),
-                buildRightPage(screenWidth, screenHeight, context)
-              ],
-            ),
+          child: Stack(
+            children: <Widget>[
+              buildLeftPage(),
+              buildMiddlePage(),
+              buildRightPage(),
+            ],
           ),
         ),
       ),
@@ -116,20 +121,7 @@ class _TikTokState extends State<TikTokPage> with TickerProviderStateMixin {
   ///
   /// 通过 [Transform.scale] 进行根据 [offsetX] 缩放
   /// 最小 0.88 最大为 1
-  Transform buildLeftPage(double screenWidth) {
-    return Transform.scale(
-      scale: 0.88 + 0.12 * offsetX / screenWidth < 0.88 ? 0.88 : 0.88 + 0.12 * offsetX / screenWidth,
-      child: Container(
-        child: Image.asset(
-          "assets/left.png",
-          fit: BoxFit.fill,
-        ),
-        foregroundDecoration: BoxDecoration(
-          color: Color.fromRGBO(0, 0, 0, 1 - (offsetX / screenWidth)),
-        ),
-      ),
-    );
-  }
+  Widget buildLeftPage() =>LeftPage(offsetX: offsetX,);
 
   /// 中间 Widget
   ///
@@ -137,51 +129,16 @@ class _TikTokState extends State<TikTokPage> with TickerProviderStateMixin {
   /// 水平偏移量为 [ offsetX] /5 产生视差效果
   Widget buildMiddlePage()=>MiddlePage(offsetX: offsetX,offsetY: offsetY);
 
-
   /// 右侧Widget
   ///
   /// 通过 [Transform.translate] 根据 [offsetX] 进行偏移
-  Transform buildRightPage(double screenWidth, double screenHeight, BuildContext context) {
-    return Transform.translate(
-        offset: Offset(max(0, offsetX + screenWidth), 0),
-        child: Container(
-          width: screenWidth,
-          height: screenHeight,
-          color: Colors.transparent,
-          child: Stack(
-            children: <Widget>[
-              Image.asset(
-                "assets/right.png",
-                fit: BoxFit.fill,
-                width: screenWidth,
-              ),
-              Positioned(
-                  bottom: 190,
-                  child: FlatButton(
-                    padding: EdgeInsets.all(0),
-                    onPressed: () {
-                      Navigator.push(context, TransparentPage(builder:(BuildContext context) {
-                        return DetailPage();
-                      }));
-                    },
-                    child: SizedBox(
-                      width: 130,
-                      height: 175,
-                      child: Hero(
-                        tag: "detail",
-                        child: Image.asset(
-                          "assets/detail.png",
-                          fit: BoxFit.fill,
-                        ),
-                      ),
-                    ),
-                  ))
-            ],
-          ),
-        ));
-  }
+  buildRightPage()=>RightPage(offsetX: offsetX,offsetY: offsetY);
+
+
 
   /// 滑动到中间
+  ///
+  /// [offsetX] to 0.0
   void animateToMiddle() {
     animationControllerX =
         AnimationController(duration: Duration(milliseconds: offsetX.abs() * 1000 ~/ 500), vsync: this);
@@ -197,6 +154,8 @@ class _TikTokState extends State<TikTokPage> with TickerProviderStateMixin {
   }
 
   /// 滑动到左边
+  ///
+  /// [offsetX] to [screenWidth]
   void animateToLeft(double screenWidth) {
     animationControllerX =
         AnimationController(duration: Duration(milliseconds: offsetX.abs() * 1000 ~/ 500), vsync: this);
@@ -212,6 +171,8 @@ class _TikTokState extends State<TikTokPage> with TickerProviderStateMixin {
   }
 
   /// 滑动到右边
+  ///
+  /// [offsetX] to -[screenWidth]
   void animateToRight(double screenWidth) {
     animationControllerX =
         AnimationController(duration: Duration(milliseconds: offsetX.abs() * 1000 ~/ 500), vsync: this);
@@ -227,6 +188,8 @@ class _TikTokState extends State<TikTokPage> with TickerProviderStateMixin {
   }
 
   /// 滑动到顶部
+  ///
+  /// [offsetY] to 0.0
   void animateToTop() {
     animationControllerY =
         AnimationController(duration: Duration(milliseconds: offsetY.abs() * 1000 ~/ 40), vsync: this);
@@ -242,7 +205,7 @@ class _TikTokState extends State<TikTokPage> with TickerProviderStateMixin {
 
   /// 震动效果
   vibrate() {
-    // not Check if the device can vibrate
+    // Not check if the device can vibrate
     Vibrate.feedback(FeedbackType.impact);
   }
 
@@ -252,4 +215,7 @@ class _TikTokState extends State<TikTokPage> with TickerProviderStateMixin {
     animationControllerY.dispose();
     super.dispose();
   }
+
+
+
 }
