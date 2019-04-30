@@ -1,21 +1,20 @@
-import 'package:flutter/material.dart';
 import 'dart:math';
 
+import 'package:flutter/material.dart';
 
 /// 主页面
 ///
 /// 手势交互包括：下拉刷新，和左右两侧的translate动画
-class MiddlePage extends StatelessWidget{
+class MiddlePage extends StatelessWidget {
   final double offsetX;
   final double offsetY;
-
-  const MiddlePage({Key key, this.offsetX, this.offsetY}) : super(key: key);
+  final Function onPageChanged;
+  const MiddlePage({Key key, this.offsetX, this.offsetY,this.onPageChanged }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return buildMiddlePage();
   }
-
 
   /// 中间 Widget
   ///
@@ -31,10 +30,18 @@ class MiddlePage extends StatelessWidget{
               verticalDirection: VerticalDirection.down,
               children: <Widget>[
                 Expanded(
-                  child: Image.asset(
-                    "assets/middle.png",
-                    fit: BoxFit.fill,
-                  ),
+                  child: PageView(
+                    onPageChanged: onPageChanged,
+                    pageSnapping: true,
+                    physics: ClampingScrollPhysics(),
+                    scrollDirection: Axis.vertical,
+                      children: List.generate(
+                    10,
+                    (_) => Image.asset(
+                          "assets/middle.png",
+                          fit: BoxFit.fill,
+                        ),
+                  )),
                 ),
                 Image.asset(
                   "assets/bottom.png",
@@ -52,6 +59,7 @@ class MiddlePage extends StatelessWidget{
     );
   }
 
+  /// 顶部header
   Widget buildHeader() {
     if (offsetY >= 20) {
       return Opacity(

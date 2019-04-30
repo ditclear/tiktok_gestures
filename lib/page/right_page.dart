@@ -49,7 +49,7 @@ class RightPage extends StatelessWidget{
                       // 由于[MaterialPageRoute]等等的背景都是不透明的,所以这里修改了一下
                       Navigator.push(context, TransparentPage(builder:(BuildContext context) {
                         return DetailPage(index: 0,);
-                      }));
+                      },fullscreenDialog: true));
                     },
                     child: SizedBox(
                       width: 130,
@@ -58,7 +58,7 @@ class RightPage extends StatelessWidget{
                         tag: "detail_0",
                         child: Image.asset(
                           "assets/detail.png",
-                          fit: BoxFit.fill,
+                          fit: BoxFit.cover,
                         ),
                       ),
                     ),
@@ -71,7 +71,7 @@ class RightPage extends StatelessWidget{
                     onPressed: () {
                       Navigator.push(context, TransparentPage(builder:(BuildContext context) {
                         return DetailPage(index: 1,);
-                      }));
+                      },fullscreenDialog: true));
                     },
                     child: SizedBox(
                       width: 130,
@@ -80,7 +80,7 @@ class RightPage extends StatelessWidget{
                         tag: "detail_1",
                         child: Image.asset(
                           "assets/detail2.png",
-                          fit: BoxFit.fill,
+                          fit: BoxFit.cover,
                         ),
                       ),
                     ),

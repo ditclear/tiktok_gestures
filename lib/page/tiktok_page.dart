@@ -1,10 +1,7 @@
-import 'dart:math';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:tiktok_gestures/page/detail_page.dart';
-import 'package:tiktok_gestures/helper/transparent_page.dart';
 import 'package:tiktok_gestures/page/left_page.dart';
 import 'package:tiktok_gestures/page/middle_page.dart';
 import 'package:tiktok_gestures/page/right_page.dart';
@@ -31,8 +28,6 @@ class _TikTokState extends State<TikTokPage> with TickerProviderStateMixin {
   int currentIndex = 0;
   bool inMiddle = true;
 
-
-
   @override
   Widget build(BuildContext context) {
     SystemChrome.setEnabledSystemUIOverlays([]);
@@ -45,25 +40,7 @@ class _TikTokState extends State<TikTokPage> with TickerProviderStateMixin {
           // 垂直方向滑动中
           onVerticalDragUpdate: inMiddle
               ? (details) {
-                  final tempY = offsetY + details.delta.dy / 2;
-                  if (currentIndex == 0) {
-                    if (tempY > 0) {
-                      if (tempY < 40) {
-                        setState(() {
-                          offsetY = tempY;
-                        });
-                      } else if (offsetY != 40) {
-                        setState(() {
-                          setState(() {
-                            offsetY = 40;
-                          });
-                        });
-                        vibrate();
-                      }
-                    }
-                  } else {
-                    offsetY = 0;
-                  }
+                  calculateOffsetY(details);
                 }
               : null,
           // 垂直方向滑动结束
@@ -71,6 +48,16 @@ class _TikTokState extends State<TikTokPage> with TickerProviderStateMixin {
             if (offsetY != 0) {
               animateToTop();
             }
+          },
+          onVerticalDragCancel: (){
+            debugPrint("onVerticalDragCancel");
+          },
+          onVerticalDragStart: (_){
+            debugPrint("onVerticalDragStart");
+
+          },
+          onVerticalDragDown: (_){
+            debugPrint("onVerticalDragDown");
           },
           // 水平方向滑动结束
           onHorizontalDragEnd: (details) {
@@ -87,6 +74,7 @@ class _TikTokState extends State<TikTokPage> with TickerProviderStateMixin {
           // 水平方向滑动开始
           onHorizontalDragStart: (_) {
             animationControllerX?.stop();
+            animationControllerY?.stop();
           },
           // 水平方向滑动中
           onHorizontalDragUpdate: (details) {
@@ -117,24 +105,77 @@ class _TikTokState extends State<TikTokPage> with TickerProviderStateMixin {
     );
   }
 
+  void onPageChanged(index) {
+    currentIndex = index;
+  }
+  /// 计算[offsetY]
+  ///
+  /// 手指上滑,[absorbing]为false，事件交给底层PageView处理
+  /// 处于第一页且是下拉，则拦截滑动事件
+  void calculateOffsetY(DragUpdateDetails details) {
+    final tempY = offsetY + details.delta.dy/2;
+    if (currentIndex == 0) {
+      absorbing = true;
+      if (tempY > 0) {
+        if (tempY < 40) {
+          offsetY = tempY;
+        } else if (offsetY != 40) {
+          offsetY = 40;
+          vibrate();
+        }
+      }else{
+        absorbing =false;
+      }
+      setState(() {});
+    } else {
+      absorbing = false;
+      offsetY = 0;
+      setState(() {});
+    }
+  }
+
   /// 左侧Widget
   ///
   /// 通过 [Transform.scale] 进行根据 [offsetX] 缩放
   /// 最小 0.88 最大为 1
-  Widget buildLeftPage() =>LeftPage(offsetX: offsetX,);
+  Widget buildLeftPage() => LeftPage(
+        offsetX: offsetX,
+      );
+
+  bool absorbing = true;
 
   /// 中间 Widget
   ///
   /// 通过 [Transform.translate] 根据 [offsetX] 进行偏移
   /// 水平偏移量为 [ offsetX] /5 产生视差效果
-  Widget buildMiddlePage()=>MiddlePage(offsetX: offsetX,offsetY: offsetY);
+  Widget buildMiddlePage() {
+    return AbsorbPointer(
+        absorbing: absorbing,
+        child: NotificationListener<OverscrollIndicatorNotification>(
+            onNotification: (notification) {
+              notification.disallowGlow();
+            },
+            child: NotificationListener<UserScrollNotification>(
+                onNotification: (notification) {
+                  debugPrint("userscroll:${notification.metrics.pixels}");
+                  // 当手指离开时，并且处于顶部则拦截PageView的滑动事件
+                  if (notification.direction == ScrollDirection.idle && notification.metrics.pixels==0.0) {
+                    setState(() {
+                      absorbing = true;
+                    });
+                  }
+                },
+                child: MiddlePage(
+                  offsetX: offsetX,
+                  offsetY: offsetY,
+                  onPageChanged: onPageChanged,
+                ))));
+  }
 
   /// 右侧Widget
   ///
   /// 通过 [Transform.translate] 根据 [offsetX] 进行偏移
-  buildRightPage()=>RightPage(offsetX: offsetX,offsetY: offsetY);
-
-
+  buildRightPage() => RightPage(offsetX: offsetX, offsetY: offsetY);
 
   /// 滑动到中间
   ///
@@ -199,6 +240,13 @@ class _TikTokState extends State<TikTokPage> with TickerProviderStateMixin {
         setState(() {
           offsetY = animationY.value;
         });
+      })
+      ..addStatusListener((status) {
+//        if(status == AnimationStatus.completed){
+//          setState(() {
+//            absorbing = true;
+//          });
+//        }
       });
     animationControllerY.forward();
   }
@@ -215,7 +263,4 @@ class _TikTokState extends State<TikTokPage> with TickerProviderStateMixin {
     animationControllerY.dispose();
     super.dispose();
   }
-
-
-
 }

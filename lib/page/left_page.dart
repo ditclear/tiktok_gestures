@@ -25,7 +25,8 @@ class LeftPage extends StatelessWidget{
       child: Container(
         child: Image.asset(
           "assets/left.png",
-          fit: BoxFit.fill,
+          fit: BoxFit.fitWidth,
+          width: screenWidth,
         ),
         foregroundDecoration: BoxDecoration(
           color: Color.fromRGBO(0, 0, 0, 1 - (offsetX / screenWidth)),
